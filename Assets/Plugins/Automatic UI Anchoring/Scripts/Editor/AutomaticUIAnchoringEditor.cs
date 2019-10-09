@@ -32,4 +32,35 @@ public class AutomaticUIAnchoringEditor : Editor
                 Anchor(rectTransform);
         }
     }
+    
+    // Added "deanchoring" for the cases when resizing the parent transform is needed without resizing the anchored children
+    private static void Deanchor(RectTransform rectTransform)
+    {
+        RectTransform parentRectTransform = null;
+        if (rectTransform.transform.parent)
+            parentRectTransform = rectTransform.transform.parent.GetComponent<RectTransform>();
+
+        if (!parentRectTransform)
+            return;
+
+        Undo.RecordObject(rectTransform, "Deanchor UI Object");
+        Rect parentRect = parentRectTransform.rect;
+        rectTransform.offsetMin = new Vector2(parentRect.width * rectTransform.anchorMin.x, -(parentRect.height - parentRect.height * rectTransform.anchorMin.y));
+        rectTransform.offsetMax = new Vector2(parentRect.width * rectTransform.anchorMax.x, -(parentRect.height - parentRect.height * rectTransform.anchorMax.y));
+        rectTransform.anchorMin = new Vector2(0, 1);
+        rectTransform.anchorMax = new Vector2(0, 1);
+        rectTransform.pivot = new Vector2(0.5f, 0.5f);
+        rectTransform.pivot = new Vector2(0.5f, 0.5f);
+    }
+
+    [MenuItem("Tools/Automatic UI Anchoring/Deanchor Selected UI Objects _#F1")]
+    private static void DeanchorSelectedUIObjects()
+    {
+        for (int i = 0; i < Selection.gameObjects.Length; i++)
+        {
+            RectTransform rectTransform = Selection.gameObjects[i].GetComponent<RectTransform>();
+            if (rectTransform)
+                Deanchor(rectTransform);
+        }
+    }
 }
